@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 
 const Weather = ({ lat, lon }) => {
   const [weather, setWeather] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [emoji, setEmoji] = useState("🌥️");
 
-  // Function to fetch weather data using OpenWeatherMap API
   const fetchWeather = async (latitude, longitude) => {
     const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
     try {
@@ -11,22 +12,54 @@ const Weather = ({ lat, lon }) => {
         `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=metric`
       );
       const data = await response.json();
-      setWeather(data); // Store weather data
+      setWeather(data);
+      setLoading(false);
+      setEmoji(getWeatherEmoji(data.weather[0].main)); // Set appropriate emoji
     } catch (err) {
       console.log(err.message);
+      setLoading(false);
+    }
+  };
+
+  const getWeatherEmoji = (condition) => {
+    switch (condition.toLowerCase()) {
+      case "clear":
+        return "🌞"; // Sunny
+      case "clouds":
+        return "☁️"; // Cloudy
+      case "rain":
+        return "🌧️"; // Rainy
+      case "snow":
+        return "❄️"; // Snowy
+      case "thunderstorm":
+        return "⚡"; // Thunderstorm
+      case "mist":
+        return "🌫️"; // Misty
+      default:
+        return "🌥️"; // Default cloudy
     }
   };
 
   useEffect(() => {
-    fetchWeather(lat, lon); // Example coordinates (latitude, longitude)
-  }, []); // Empty array ensures it runs once when component mounts
+    fetchWeather(lat, lon);
+  }, [lat, lon]);
 
   return (
-    <div>
-      {weather && (
-        <div>
-          <h1>Temperature: {weather.main.temp}°C</h1>
-        </div>
+    <div className="weather-container">
+      {loading ? (
+        <div className="loader"></div>
+      ) : (
+        weather && (
+          <div className="weather-info">
+            <div className="weather-icon">
+              <span className="emoji">{emoji}</span>
+            </div>
+            <div className="temperature-info">
+              <h3 className="temperature">{weather.main.temp}°C</h3>
+              <p className="description">{weather.weather[0].description}</p>
+            </div>
+          </div>
+        )
       )}
     </div>
   );

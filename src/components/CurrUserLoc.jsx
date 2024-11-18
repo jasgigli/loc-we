@@ -7,6 +7,7 @@ const CurrUserLoc = () => {
     longitude: null,
     city: null,
   });
+  const [loading, setLoading] = useState(true);
   const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
 
   useEffect(() => {
@@ -36,28 +37,28 @@ const CurrUserLoc = () => {
         ...prevLocation,
         city: city,
       }));
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching city name:", error);
+      setLoading(false);
     }
   };
 
   return (
-    <div>
-      {location.latitude && location.longitude && location.city && (
-        <div>
-          <h1>Location: {location.city}</h1>
-        </div>
-      )}
-
-      {location.latitude && location.longitude && (
-        <Weather
-          lat={location.latitude}
-          lon={location.longitude}
-          city={location.city}
-        />
+    <div className="location-container">
+      <h1 className="location-title">Current Weather</h1>
+      {loading ? (
+        <div className="loader"></div>
+      ) : (
+        location.city && (
+          <div className="location-info">
+            <h2 className="city-name">{location.city}</h2>
+            <Weather lat={location.latitude} lon={location.longitude} />
+          </div>
+        )
       )}
     </div>
   );
 };
 
-export { CurrUserLoc };
+export default CurrUserLoc;
